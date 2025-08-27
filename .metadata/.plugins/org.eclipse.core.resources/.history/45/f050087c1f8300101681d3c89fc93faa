@@ -1,0 +1,97 @@
+package JDBC.controllers;
+
+import java.io.IOException;
+
+import JDBC.model.Users;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import JDBC.service.UserService;
+import JDBC.service.impl.UserServiceImpl;
+
+@SuppressWarnings("serial")
+@WebServlet(urlPatterns = "/login")
+public class LoginController extends HttpServlet {
+
+    public static final String SESSION_ACCOUNT = "account";
+    public static final String COOKIE_REMEMBER = "username";
+
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        HttpSession session = req.getSession(false);
+
+        // Nếu đã login qua session
+        if (session != null && session.getAttribute(SESSION_ACCOUNT) != null) {
+            Users user = (Users) session.getAttribute(SESSION_ACCOUNT);
+            resp.setContentType("text/html;charset=UTF-8");
+            resp.getWriter().println("<h3>Bạn đã đăng nhập với tài khoản: " + user.getUserName() + "</h3>");
+            return;
+        }
+
+        // Kiểm tra cookie
+        Cookie[] cookies = req.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (COOKIE_REMEMBER.equals(cookie.getName())) {
+                    session = req.getSession(true);
+                    session.setAttribute(SESSION_ACCOUNT, cookie.getValue());
+                    resp.setContentType("text/html;charset=UTF-8");
+                    resp.getWriter().println("<h3>Bạn đã đăng nhập (cookie) với tài khoản: " + cookie.getValue() + "</h3>");
+                    return;
+                }
+            }
+        }
+
+        // Chưa login, forward tới login.jsp
+        req.getRequestDispatcher("/views/login.jsp").forward(req, resp);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        resp.setContentType("text/html;charset=UTF-8");
+        req.setCharacterEncoding("UTF-8");
+
+        String username = req.getParameter("username");
+        String password = req.getParameter("password");
+        boolean isRememberMe = "on".equals(req.getParameter("remember"));
+
+        // Validate input
+        if (username == null || username.trim().isEmpty() ||
+            password == null || password.trim().isEmpty()) {
+            req.setAttribute("alert", "Tài khoản hoặc mật khẩu không được rỗng");
+            req.getRequestDispatcher("/views/login.jsp").forward(req, resp);
+            return;
+        }
+
+        // Login
+        UserService service = new UserServiceImpl();
+        Users user = service.login(username.trim(), password.trim());
+
+        if (user != null) {
+            HttpSession session = req.getSession(true);
+            session.setAttribute(SESSION_ACCOUNT, user);
+
+            if (isRememberMe) {
+                saveRememberMe(resp, username.trim());
+            }
+
+            resp.setContentType("text/html;charset=UTF-8");
+            resp.getWriter().println("<h3>Đăng nhập thành công! Xin chào: " + user.getUserName() + "</h3>");
+        } else {
+            req.setAttribute("alert", "Tài khoản hoặc mật khẩu không đúng");
+            req.getRequestDispatcher("/views/login.jsp").forward(req, resp);
+        }
+    }
+
+    // Lưu cookie "Remember me"
+    private void saveRememberMe(HttpServletResponse resp, String username) {
+        Cookie cookie = new Cookie(COOKIE_REMEMBER, username);
+        cookie.setMaxAge(30 * 60); // 30 phút
+        cookie.setPath("/");       // cookie có hiệu lực toàn app
+        resp.addCookie(cookie);
+    }
+}
