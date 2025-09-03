@@ -1,5 +1,0 @@
-package JDBC.service;
-
-public class UserServiceImpl {
-
-}

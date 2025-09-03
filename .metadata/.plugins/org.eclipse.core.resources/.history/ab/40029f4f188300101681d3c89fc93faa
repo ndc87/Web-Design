@@ -1,5 +1,0 @@
-package JDBC.dao;
-
-public interface UserDao {
-	User get(String username);
-}

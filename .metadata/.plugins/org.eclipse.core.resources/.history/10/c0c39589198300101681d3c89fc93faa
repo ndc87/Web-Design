@@ -1,7 +1,0 @@
-package JDBC.dao;
-
-import JDBC.model.Users;
-
-public interface UserDao {
-    Users get(String username);
-}
