@@ -22,6 +22,16 @@ public class User implements Serializable {
 		this.phone = phone;
 	}
 
+	// Thêm constructor mới phù hợp với hàm register
+	public User(String email, String userName, String fullName, String passWord, String phone) {
+		super();
+		this.email = email;
+		this.userName = userName;
+		this.fullName = fullName;
+		this.passWord = passWord;
+		this.phone = phone;
+	}
+	
 	public String getPhone() {
 		return phone;
 	}
@@ -95,9 +105,6 @@ public class User implements Serializable {
 	@Override
 	public String toString() {
 		return "User [id=" + id + ", email=" + email + ", userName=" + userName + ", fullName=" + fullName
-				+ ", passWord=" + passWord + ", avatar=" + avatar + "]";
+				+ ", passWord=" + passWord + ", avatar=" + avatar + ", phone=" + phone + "]";
 	}
-
-
-
 }

@@ -10,28 +10,27 @@ import vn.iotstar.dao.UserDao;
 import vn.iotstar.models.User;
 
 public class UserDaoImpl implements UserDao {
-	public Connection conn = null;
-	public PreparedStatement ps = null;
-	public ResultSet rs = null;
 
 	@Override
 	public User get(String username) {
-		String sql = "SELECT * FROM [User] WHERE username = ? ";
-		try {
-			conn = new dbconnection().getConnectionW();
-			ps = conn.prepareStatement(sql);
-			ps.setString(1, username);
-			rs = ps.executeQuery();
-			while (rs.next()) {
-				User user = new User();
-				user.setId(rs.getInt("id"));
-				user.setEmail(rs.getString("email"));
-				user.setUserName(rs.getString("username"));
-				user.setFullName(rs.getString("fullname"));
-				user.setPassWord(rs.getString("password"));
-				user.setAvatar(rs.getString("avatar"));
+		String sql = "SELECT * FROM Users WHERE LOWER(username) = LOWER(?)";
+		dbconnection dbConn = new dbconnection();
 
-				return user;
+		try (Connection conn = dbConn.getConnectionW();
+				PreparedStatement ps = conn.prepareStatement(sql);) {
+			ps.setString(1, username);
+			try (ResultSet rs = ps.executeQuery()) {
+				if (rs.next()) {
+					User user = new User();
+					user.setId(rs.getInt("id"));
+					user.setUserName(rs.getString("username"));
+					user.setPassWord(rs.getString("password"));
+					user.setEmail(rs.getString("email"));
+					user.setFullName(rs.getString("fullname"));
+					user.setPhone(rs.getString("phone"));
+					user.setAvatar(rs.getString("avatar"));
+					return user;
+				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -41,16 +40,15 @@ public class UserDaoImpl implements UserDao {
 
 	@Override
 	public void insert(User user) {
-		String sql = "INSERT INTO [User](email, username, fullname, password, avatar, phone ) VALUES (?,?,?,?,?,?)";
-		try {
-			conn = new dbconnection().getConnectionW();
-			ps = conn.prepareStatement(sql);
+		String sql = "INSERT INTO [Users](email, username, fullname, password, avatar, phone) VALUES (?,?,?,?,?,?)";
+		try (Connection conn = new dbconnection().getConnectionW();
+				PreparedStatement ps = conn.prepareStatement(sql);) {
 			ps.setString(1, user.getEmail());
 			ps.setString(2, user.getUserName());
 			ps.setString(3, user.getFullName());
 			ps.setString(4, user.getPassWord());
 			ps.setString(5, user.getAvatar());
-			ps.setString(7, user.getPhone());
+			ps.setString(6, user.getPhone());
 			ps.executeUpdate();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -60,18 +58,17 @@ public class UserDaoImpl implements UserDao {
 	@Override
 	public boolean checkExistEmail(String email) {
 		boolean duplicate = false;
-		String query = "select * from [user] where email = ?";
-		try {
-			conn = new dbconnection().getConnectionW();
-			ps = conn.prepareStatement(query);
+		String query = "select * from [Users] where email = ?";
+		try (Connection conn = new dbconnection().getConnectionW();
+				PreparedStatement ps = conn.prepareStatement(query);) {
 			ps.setString(1, email);
-			rs = ps.executeQuery();
-			if (rs.next()) {
-				duplicate = true;
+			try (ResultSet rs = ps.executeQuery()) {
+				if (rs.next()) {
+					duplicate = true;
+				}
 			}
-			ps.close();
-			conn.close();
 		} catch (Exception ex) {
+			ex.printStackTrace();
 		}
 		return duplicate;
 	}
@@ -79,18 +76,17 @@ public class UserDaoImpl implements UserDao {
 	@Override
 	public boolean checkExistUsername(String username) {
 		boolean duplicate = false;
-		String query = "select * from [User] where username = ?";
-		try {
-			conn = new dbconnection().getConnectionW();
-			ps = conn.prepareStatement(query);
+		String query = "select * from [Users] where username = ?";
+		try (Connection conn = new dbconnection().getConnectionW();
+				PreparedStatement ps = conn.prepareStatement(query);) {
 			ps.setString(1, username);
-			rs = ps.executeQuery();
-			if (rs.next()) {
-				duplicate = true;
+			try (ResultSet rs = ps.executeQuery()) {
+				if (rs.next()) {
+					duplicate = true;
+				}
 			}
-			ps.close();
-			conn.close();
 		} catch (Exception ex) {
+			ex.printStackTrace();
 		}
 		return duplicate;
 	}
@@ -98,49 +94,31 @@ public class UserDaoImpl implements UserDao {
 	@Override
 	public boolean checkExistPhone(String phone) {
 		boolean duplicate = false;
-		String query = "select * from [User] where phone = ?";
-		try {
-			conn = new dbconnection().getConnectionW();
-			ps = conn.prepareStatement(query);
+		String query = "select * from [Users] where phone = ?";
+		try (Connection conn = new dbconnection().getConnectionW();
+				PreparedStatement ps = conn.prepareStatement(query);) {
 			ps.setString(1, phone);
-			rs = ps.executeQuery();
-			if (rs.next()) {
-				duplicate = true;
+			try (ResultSet rs = ps.executeQuery()) {
+				if (rs.next()) {
+					duplicate = true;
+				}
 			}
-			ps.close();
-			conn.close();
 		} catch (Exception ex) {
+			ex.printStackTrace();
 		}
 		return duplicate;
 	}
+
 	@Override
-    public void updatePassword(String username, String newPassword) {
-        String sql = "UPDATE Users SET password = ? WHERE username = ?";
-        dbconnection dbConn = new dbconnection();
-        Connection conn = null;
-        PreparedStatement ps = null;
-
-        try {
-            conn = dbConn.getConnectionW();
-            ps = conn.prepareStatement(sql);
-            ps.setString(1, newPassword);
-            ps.setString(2, username);
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            // Xử lý ngoại lệ SQL
-            e.printStackTrace();
-        } catch (Exception e) {
-            // Xử lý các ngoại lệ khác từ lớp kết nối
-            e.printStackTrace();
-        } finally {
-            // Đóng các tài nguyên
-            try {
-                if (ps != null) ps.close();
-                if (conn != null) conn.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
+	public void updatePassword(String username, String newPassword) {
+		String sql = "UPDATE Users SET password = ? WHERE username = ?";
+		try (Connection conn = new dbconnection().getConnectionW();
+				PreparedStatement ps = conn.prepareStatement(sql);) {
+			ps.setString(1, newPassword);
+			ps.setString(2, username);
+			ps.executeUpdate();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 }

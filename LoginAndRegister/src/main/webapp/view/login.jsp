@@ -152,7 +152,7 @@ h2 {
 			<!-- Register link -->
 			<div class="register-link">
 				Nếu bạn chưa có tài khoản trên hệ thống, thì hãy <a
-					href="register.jsp">Đăng ký</a>
+					href="view/register.jsp">Đăng ký</a>
 			</div>
 		</form>
 	</div>
