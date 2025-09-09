@@ -10,17 +10,15 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public vn.iotstar.models.User login(String username, String password) {
-
 		User user = this.get(username);
 		if (user != null && password.equals(user.getPassWord())) {
 			return user;
 		}
 		return null;
 	}
-
+	
 	@Override
 	public vn.iotstar.models.User get(String username) {
-
 		return userDao.get(username);
 	}
 
@@ -29,16 +27,29 @@ public class UserServiceImpl implements UserService {
 		if (userDao.checkExistUsername(username)) {
 			return false;
 		}
-		long millis = System.currentTimeMillis();
-		java.sql.Date date = new java.sql.Date(millis);
-		userDao.insert(new User(email, username, fullname, password, null, phone));
+		if (userDao.checkExistEmail(email)) {
+			return false;
+		}
+		if (userDao.checkExistPhone(phone)) {
+			return false;
+		}
+		
+		User newUser = new User(email, username, fullname, password, null, phone);
+		userDao.insert(newUser);
 		return true;
 	}
 
+	@Override
+	public void insert(User user) {
+		userDao.insert(user);
+	}
+
+	@Override
 	public boolean checkExistEmail(String email) {
 		return userDao.checkExistEmail(email);
 	}
 
+	@Override
 	public boolean checkExistUsername(String username) {
 		return userDao.checkExistUsername(username);
 	}
@@ -48,11 +59,6 @@ public class UserServiceImpl implements UserService {
 		return userDao.checkExistPhone(phone);
 	}
 
-	@Override
-	public void insert(User user) {
-		userDao.insert(user);
-	}
-	
 	@Override
     public void updatePassword(String username, String newPassword) {
         userDao.updatePassword(username, newPassword);

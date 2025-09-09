@@ -39,9 +39,8 @@ public class LoginController extends HttpServlet {
                 if (cookie.getName().equals(COOKIE_REMEMBER_ME)) {
                     // Lấy đối tượng User từ database bằng tên người dùng trong cookie
                     UserService service = new UserServiceImpl();
-                    // Sửa lỗi ở đây: Sử dụng phương thức get() thay vì checkExistUsername()
                     User user = service.get(cookie.getValue());
-                    
+
                     if (user != null) {
                         // Tạo session mới và lưu đối tượng User đầy đủ
                         session = req.getSession(true);
@@ -52,6 +51,13 @@ public class LoginController extends HttpServlet {
                     }
                 }
             }
+        }
+
+        // Lấy thông báo từ session nếu có
+        HttpSession sessionAlert = req.getSession(false);
+        if (sessionAlert != null && sessionAlert.getAttribute("alert") != null) {
+            req.setAttribute("alert", sessionAlert.getAttribute("alert"));
+            sessionAlert.removeAttribute("alert");
         }
         
         // Nếu không có session hoặc cookie hợp lệ, chuyển hướng đến trang đăng nhập
@@ -67,11 +73,13 @@ public class LoginController extends HttpServlet {
         String password = req.getParameter("password");
         boolean isRememberMe = "on".equals(req.getParameter("remember"));
 
-        if (username.isEmpty() || password.isEmpty()) {
+        if (username == null || username.trim().isEmpty() || password == null || password.isEmpty()) {
             req.setAttribute("alert", "Tài khoản hoặc mật khẩu không được rỗng");
             req.getRequestDispatcher("/view/login.jsp").forward(req, resp);
             return;
         }
+        
+        username = username.trim();
 
         UserService service = new UserServiceImpl();
         User user = service.login(username, password);

@@ -28,7 +28,8 @@ public class UserDaoImpl implements UserDao {
 					user.setEmail(rs.getString("email"));
 					user.setFullName(rs.getString("fullname"));
 					user.setPhone(rs.getString("phone"));
-					user.setAvatar(rs.getString("avatar"));
+					// Bỏ dòng này đi để không lấy giá trị từ cột 'avatar'
+					// user.setAvatar(rs.getString("avatar"));
 					return user;
 				}
 			}
@@ -40,15 +41,15 @@ public class UserDaoImpl implements UserDao {
 
 	@Override
 	public void insert(User user) {
-		String sql = "INSERT INTO [Users](email, username, fullname, password, avatar, phone) VALUES (?,?,?,?,?,?)";
+		// Sửa lỗi: Bỏ cột 'avatar' khỏi câu lệnh INSERT
+		String sql = "INSERT INTO [Users](email, username, fullname, password, phone) VALUES (?,?,?,?,?)";
 		try (Connection conn = new dbconnection().getConnectionW();
 				PreparedStatement ps = conn.prepareStatement(sql);) {
 			ps.setString(1, user.getEmail());
 			ps.setString(2, user.getUserName());
 			ps.setString(3, user.getFullName());
 			ps.setString(4, user.getPassWord());
-			ps.setString(5, user.getAvatar());
-			ps.setString(6, user.getPhone());
+			ps.setString(5, user.getPhone());
 			ps.executeUpdate();
 		} catch (Exception e) {
 			e.printStackTrace();
