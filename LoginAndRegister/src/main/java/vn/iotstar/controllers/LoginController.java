@@ -39,7 +39,8 @@ public class LoginController extends HttpServlet {
                 if (cookie.getName().equals(COOKIE_REMEMBER_ME)) {
                     // Lấy đối tượng User từ database bằng tên người dùng trong cookie
                     UserService service = new UserServiceImpl();
-                    User user = service.checkExistUsername(cookie.getValue()); 
+                    // Sửa lỗi ở đây: Sử dụng phương thức get() thay vì checkExistUsername()
+                    User user = service.get(cookie.getValue());
                     
                     if (user != null) {
                         // Tạo session mới và lưu đối tượng User đầy đủ

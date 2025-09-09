@@ -12,7 +12,7 @@ import vn.iotstar.service.UserService;
 import vn.iotstar.service.impl.UserServiceImpl;
 @WebServlet("/forget-password")
 public class ForgetPasswordController extends HttpServlet {
-
+	private static final long serialVersionUID = 1L;
 	private UserService userService = new UserServiceImpl();
 
     @Override
@@ -25,17 +25,19 @@ public class ForgetPasswordController extends HttpServlet {
         String email = req.getParameter("email");
         String newPassword = req.getParameter("newPassword");
 
+        // Kiểm tra xem email có tồn tại không
         if (userService.checkExistEmail(email)) {
-            if (userService.updatePassword(email, newPassword)) {
-                // Chỉ set attribute và forward về trang login
-                req.setAttribute("alert", "Đổi mật khẩu thành công! Vui lòng đăng nhập lại.");
-                req.getRequestDispatcher("/view/login.jsp").forward(req, resp);
-                return;
-            }
-        }
+            // Nếu email tồn tại, gọi phương thức để cập nhật mật khẩu
+            // Vì updatePassword() là void, chúng ta chỉ cần gọi nó, không cần kiểm tra trả về
+            userService.updatePassword(email, newPassword);
 
-        // Nếu email không tồn tại
-        req.setAttribute("alert", "Email không tồn tại trong hệ thống!");
-        req.getRequestDispatcher("/view/forget_password.jsp").forward(req, resp);
+            // Sau khi cập nhật thành công, chuyển hướng người dùng
+            req.setAttribute("alert", "Đổi mật khẩu thành công! Vui lòng đăng nhập lại.");
+            req.getRequestDispatcher("/view/login.jsp").forward(req, resp);
+        } else {
+            // Nếu email không tồn tại
+            req.setAttribute("alert", "Email không tồn tại trong hệ thống!");
+            req.getRequestDispatcher("/view/forget_password.jsp").forward(req, resp);
+        }
     }
 }

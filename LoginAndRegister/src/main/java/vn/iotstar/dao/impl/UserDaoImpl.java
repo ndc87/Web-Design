@@ -113,5 +113,34 @@ public class UserDaoImpl implements UserDao {
 		}
 		return duplicate;
 	}
+	@Override
+    public void updatePassword(String username, String newPassword) {
+        String sql = "UPDATE Users SET password = ? WHERE username = ?";
+        dbconnection dbConn = new dbconnection();
+        Connection conn = null;
+        PreparedStatement ps = null;
+
+        try {
+            conn = dbConn.getConnectionW();
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, newPassword);
+            ps.setString(2, username);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            // Xử lý ngoại lệ SQL
+            e.printStackTrace();
+        } catch (Exception e) {
+            // Xử lý các ngoại lệ khác từ lớp kết nối
+            e.printStackTrace();
+        } finally {
+            // Đóng các tài nguyên
+            try {
+                if (ps != null) ps.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
 }

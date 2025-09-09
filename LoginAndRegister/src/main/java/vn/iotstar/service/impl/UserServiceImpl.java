@@ -52,4 +52,9 @@ public class UserServiceImpl implements UserService {
 	public void insert(User user) {
 		userDao.insert(user);
 	}
+	
+	@Override
+    public void updatePassword(String username, String newPassword) {
+        userDao.updatePassword(username, newPassword);
+    }
 }
