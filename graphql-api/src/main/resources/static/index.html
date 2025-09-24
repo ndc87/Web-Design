@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GraphQL Product List</title>
+    <!-- 1. Nạp thư viện jQuery từ CDN -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <style>
+        body { font-family: sans-serif; margin: 2em; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #dddddd; text-align: left; padding: 8px; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+
+    <h1>Danh sách sản phẩm (Sắp xếp theo giá tăng dần)</h1>
+
+    <!-- 2. Tạo một cái bảng để chứa dữ liệu -->
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Tên sản phẩm</th>
+                <th>Giá (VND)</th>
+            </tr>
+        </thead>
+        <!-- Dữ liệu sẽ được chèn vào đây bằng JavaScript -->
+        <tbody id="product-table-body">
+        </tbody>
+    </table>
+
+    <!-- 3. Viết mã JavaScript để gọi API và render dữ liệu -->
+    <script>
+        // Lệnh này đảm bảo code chỉ chạy sau khi toàn bộ trang đã được tải xong
+        $(document).ready(function() {
+
+            // Định nghĩa câu query GraphQL mà chúng ta muốn gửi đi
+            // Đây chính là câu query bạn đã test trong GraphiQL!
+            const graphqlQuery = {
+                query: `
+                    query GetSortedProducts {
+                      productsSortedByPrice {
+                        id
+                        title
+                        price
+                      }
+                    }
+                `
+            };
+
+            // Thực hiện cuộc gọi AJAX bằng jQuery
+            $.ajax({
+                url: '/graphql', // Endpoint GraphQL của Spring Boot
+                type: 'POST',
+                contentType: 'application/json',
+                // Chuyển object JavaScript thành một chuỗi JSON
+                data: JSON.stringify(graphqlQuery),
+                
+                // Hàm này sẽ được gọi nếu API trả về kết quả thành công
+                success: function(response) {
+                    // Dữ liệu sản phẩm nằm trong response.data.productsSortedByPrice
+                    const products = response.data.productsSortedByPrice;
+                    
+                    // Lấy ra phần thân của bảng
+                    const tableBody = $('#product-table-body');
+                    
+                    // Xóa dữ liệu cũ (nếu có)
+                    tableBody.empty();
+
+                    // Lặp qua từng sản phẩm trong danh sách nhận được
+                    products.forEach(product => {
+                        // Tạo một hàng mới cho bảng
+                        const row = `<tr>
+                                        <td>${product.id}</td>
+                                        <td>${product.title}</td>
+                                        <td>${product.price.toLocaleString('vi-VN')}</td>
+                                    </tr>`;
+                        // Thêm hàng mới vào thân bảng
+                        tableBody.append(row);
+                    });
+                },
+
+                // Hàm này sẽ được gọi nếu có lỗi xảy ra
+                error: function(error) {
+                    console.error('Lỗi khi gọi API GraphQL:', error);
+                    $('#product-table-body').html('<tr><td colspan="3">Có lỗi xảy ra khi tải dữ liệu.</td></tr>');
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>

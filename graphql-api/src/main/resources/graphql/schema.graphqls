@@ -1,0 +1,82 @@
+# Phần I: Định nghĩa các hoạt động LẤY dữ liệu (Read operations)
+type Query {
+    # Chức năng theo yêu cầu
+    productsSortedByPrice: [Product]
+    productsByCategory(categoryId: ID!): [Product]
+
+    # Chức năng CRUD - Phần Read (Lấy tất cả và lấy theo ID)
+    allUsers: [User]
+    userById(id: ID!): User
+
+    allProducts: [Product]
+    productById(id: ID!): Product
+
+    allCategories: [Category]
+    categoryById(id: ID!): Category
+}
+
+# Phần II: Định nghĩa các hoạt động THAY ĐỔI dữ liệu (Create, Update, Delete)
+type Mutation {
+    # CRUD cho User
+    createUser(userInput: UserInput!): User
+    updateUser(id: ID!, userInput: UserInput!): User
+    deleteUser(id: ID!): Boolean
+
+    # CRUD cho Product
+    createProduct(productInput: ProductInput!): Product
+    updateProduct(id: ID!, productInput: ProductInput!): Product
+    deleteProduct(id: ID!): Boolean
+
+    # CRUD cho Category
+    createCategory(categoryInput: CategoryInput!): Category
+    updateCategory(id: ID!, categoryInput: CategoryInput!): Category
+    deleteCategory(id: ID!): Boolean
+}
+
+# Phần III: Định nghĩa cấu trúc của các đối tượng dữ liệu
+type Product {
+    id: ID!
+    title: String
+    quantity: Int
+    desc: String
+    price: Float
+    user: User
+    categories: [Category]
+}
+
+type User {
+    id: ID!
+    fullname: String
+    email: String
+    phone: String
+    # Lưu ý: Tuyệt đối không bao giờ đưa trường 'password' vào đây!
+}
+
+type Category {
+    id: ID!
+    name: String
+    images: String
+}
+
+# Phần IV: Định nghĩa cấu trúc dữ liệu ĐẦU VÀO cho Mutations
+# Dùng để gửi dữ liệu từ client lên server khi tạo mới hoặc cập nhật
+input UserInput {
+    fullname: String!
+    email: String!
+    password: String!
+    phone: String
+}
+
+input ProductInput {
+    title: String!
+    quantity: Int!
+    desc: String
+    price: Float!
+    userId: ID! # ID của người dùng tạo sản phẩm
+    categoryIds: [ID!] # Danh sách ID của các category mà sản phẩm thuộc về
+}
+
+input CategoryInput {
+    name: String!
+    images: String
+}
